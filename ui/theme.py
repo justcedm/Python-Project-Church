@@ -1,2 +1,35 @@
-THEME = {}
-MODERN_THEME = {}
+THEME = dict(
+    primary='#4F46E5',
+    primary_dark='#3730A3',
+    bg_main='#F6F7FB',
+    bg_card='#FFFFFF',
+    sidebar='#0B1020',
+    sidebar_text='#F8FAFC',
+    sidebar_sub='#94A3B8',
+    sidebar_hover='#182033',
+    sidebar_active='#4F46E5',
+    text_main='#111827',
+    text_sub='#64748B',
+    border='#E5E7EB',
+    success='#059669',
+    danger='#DC2626',
+    warning='#D97706',
+)
+
+MODERN_THEME = dict(
+    surface_soft='#F1F5F9',
+    surface_hover='#E5E7EB',
+    surface_muted='#EEF2F7',
+    primary_soft='#EEF2FF',
+    success_soft='#ECFDF5',
+    danger_soft='#FEF2F2',
+    warning_soft='#FFFBEB',
+    info='#0284C7',
+    info_soft='#E0F2FE',
+    shadow='#D8DEE9',
+    radius_sm=10,
+    radius_md=14,
+    radius_lg=22,
+    radius_xl=28,
+    font_family='Segoe UI',
+)
