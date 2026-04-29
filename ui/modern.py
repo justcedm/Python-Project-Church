@@ -1,23 +1,20 @@
 """
 Modern minimalist styling layer for ChurchTrack UI.
 
-This module intentionally changes only visual defaults. It does not alter
-screen navigation, database calls, validation, report generation, forecasting,
-or any other business logic.
+This module changes only visual defaults for CustomTkinter widgets. It does
+not alter navigation, database logic, validation, reporting, forecasting, or
+any business behavior.
 
-The project has many existing CustomTkinter/Tkinter screens with hard-coded
-colors. Instead of rewriting each screen's behavior, this layer normalizes the
-old visual tokens into a cleaner, minimalist palette at widget construction
- time. Because ui/__init__.py imports this module before any ui.* screen is
-loaded, the refresh is applied consistently across the whole UI folder.
+Important: this file intentionally does NOT patch tkinter.Frame, tkinter.Canvas,
+or other raw Tkinter base classes. CustomTkinter depends on the original Tkinter
+classes internally, and replacing them can cause startup errors.
 """
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
 import customtkinter as ctk
-import tkinter as tk
 
 
 MODERN = {
@@ -49,8 +46,6 @@ MODERN = {
 }
 
 
-# Legacy color tokens that appear across the current UI modules.
-# They are mapped to the minimalist system palette without touching logic.
 COLOR_MAP = {
     # Primary blues
     "#4F86F7": MODERN["primary"],
@@ -122,7 +117,6 @@ COLOR_MAP = {
     "#D0DCF0": MODERN["border"],
     "#D0D0D0": MODERN["border"],
     "#E0E0E0": MODERN["border"],
-    "#E8EDF5": MODERN["border"],
     "#EEEEEE": MODERN["border"],
     "#F0F0F0": MODERN["surface_muted"],
     "#F5F5F5": MODERN["surface_muted"],
@@ -152,7 +146,7 @@ COLOR_MAP = {
     "#F57F17": MODERN["warning"],
     "#E65100": MODERN["warning"],
 
-    # Liturgical accent colors softened but still recognizable
+    # Liturgical accent colors
     "#FFD700": "#CA8A04",
     "#800080": "#7E22CE",
     "#6A0DAD": "#7E22CE",
@@ -179,21 +173,10 @@ CTK_WIDGET_NAMES = (
     "CTkToplevel",
 )
 
-TK_WIDGET_NAMES = (
-    "Frame",
-    "Canvas",
-    "Label",
-    "Button",
-    "Toplevel",
-)
-
-
 _ORIGINAL_CTK: Dict[str, Any] = {}
-_ORIGINAL_TK: Dict[str, Any] = {}
 
 
 def color(value: Any) -> Any:
-    """Return the modern equivalent of a legacy color token."""
     if isinstance(value, tuple):
         return tuple(color(v) for v in value)
     if not isinstance(value, str):
@@ -202,7 +185,6 @@ def color(value: Any) -> Any:
 
 
 def font(value: Any) -> Any:
-    """Normalize old font tuples into a modern Windows-friendly font."""
     if isinstance(value, tuple) and value:
         family = FONT_ALIASES.get(value[0], value[0])
         return (family,) + value[1:]
@@ -233,7 +215,6 @@ def modernize_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     if "font" in kwargs:
         kwargs["font"] = font(kwargs["font"])
 
-    # Minimalist defaults only when the screen did not already specify them.
     widget_hint = kwargs.pop("_modern_widget_hint", "")
     if widget_hint == "button":
         kwargs.setdefault("corner_radius", 10)
@@ -244,15 +225,6 @@ def modernize_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
         kwargs.setdefault("corner_radius", 10)
         kwargs.setdefault("border_color", MODERN["border"])
 
-    return kwargs
-
-
-def modernize_tk_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
-    for key in ("bg", "background", "fg", "foreground", "activebackground", "activeforeground", "highlightbackground"):
-        if key in kwargs:
-            kwargs[key] = color(kwargs[key])
-    if "font" in kwargs:
-        kwargs["font"] = font(kwargs["font"])
     return kwargs
 
 
@@ -286,27 +258,7 @@ def _make_ctk_class(name: str, original: Any) -> Any:
     return ModernWidget
 
 
-def _make_tk_class(name: str, original: Any) -> Any:
-    class ModernTkWidget(original):  # type: ignore[misc, valid-type]
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
-            modernize_tk_kwargs(kwargs)
-            super().__init__(*args, **kwargs)
-
-        def configure(self, cnf: Any = None, **kwargs: Any) -> Any:  # type: ignore[override]
-            if isinstance(cnf, dict):
-                modernize_tk_kwargs(cnf)
-            modernize_tk_kwargs(kwargs)
-            return super().configure(cnf, **kwargs)
-
-        config = configure
-
-    ModernTkWidget.__name__ = name
-    ModernTkWidget.__qualname__ = name
-    return ModernTkWidget
-
-
 def apply_modern_ui() -> None:
-    """Patch widget constructors once so every ui.* module uses the new look."""
     if getattr(ctk, "_churchtrack_modern_ui_applied", False):
         return
 
@@ -322,11 +274,5 @@ def apply_modern_ui() -> None:
             original = getattr(ctk, name)
             _ORIGINAL_CTK[name] = original
             setattr(ctk, name, _make_ctk_class(name, original))
-
-    for name in TK_WIDGET_NAMES:
-        if hasattr(tk, name):
-            original = getattr(tk, name)
-            _ORIGINAL_TK[name] = original
-            setattr(tk, name, _make_tk_class(name, original))
 
     setattr(ctk, "_churchtrack_modern_ui_applied", True)
