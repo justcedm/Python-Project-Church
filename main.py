@@ -26,7 +26,9 @@ class ChurchTrackApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self.title("ChurchTrack AI System")
+        self.title("ChurchTrack")
+        self.configure(fg_color="#F6F7FB")
+        self.minsize(1180, 720)
         self.db_manager            = DatabaseManager()
         self.ai_engine             = AIEngine(self.db_manager)
         self.db_manager._ai_engine = self.ai_engine
@@ -42,7 +44,7 @@ class ChurchTrackApp(ctk.CTk):
 
     def show_login(self):
         self._clear()
-        self.configure(fg_color="#4a5a8a")
+        self.configure(fg_color="#F6F7FB")
         LoginFrame(self, self.on_login_success)
 
     def on_login_success(self, username, password):
@@ -51,14 +53,14 @@ class ChurchTrackApp(ctk.CTk):
             self._load_admin_screen("Dashboard")
         elif role == "staff":
             self._clear()
-            self.configure(fg_color="#F4F6F9")
+            self.configure(fg_color="#F6F7FB")
             StaffDonationEntry(self, self.db_manager, self.show_login)
         else:
             raise ValueError("Invalid credentials")
 
     def _load_admin_screen(self, screen):
         self._clear()
-        self.configure(fg_color="#F4F6F9")
+        self.configure(fg_color="#F6F7FB")
 
         screens = {
             "Dashboard": lambda: AdminDashboard(
@@ -107,7 +109,6 @@ class ChurchTrackApp(ctk.CTk):
             action = screens.get(screen, screens["Dashboard"])
             action()
         except Exception as e:
-            # Log error and fall back to Dashboard safely
             print("Screen load error for '{}': {}".format(screen, e))
             import traceback
             traceback.print_exc()
